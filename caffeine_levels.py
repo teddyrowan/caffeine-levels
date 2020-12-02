@@ -34,13 +34,25 @@ def caff_depletion(blood_level):
     return (1-0.99615658)*blood_level #minutes model
     #return (1-0.9999358217)*blood_level #seconds model
 
+# Create an optimal caffination profile.
+def optimal_profile(time_list, optimal_caff, end_caff):
+    fit = np.array([end_caff])
+    for time in range(1, time_list.size):
+        val = fit[time-1]/0.99615658
+        if (val > optimal_caff):
+            val = optimal_caff
+        fit = np.append(fit, val)
+    fit = np.flip(fit)
+    return fit
+    
+
 ## Main Start. 
 time_list = np.array([])
 pill_list = np.array([])
 caff_list = np.array([])
 
 time_delay = 5
-#pill_time = np.array([0, 60, 300, 500]) + time_delay
+#pill_time = np.array([0, 60, 300, 510]) + time_delay
 
 pill_time = np.array([0, 1, 2, 120, 230, 340, 450, 560]) + time_delay # 50mg pills # ideal. 
 #pill_time = np.array([0, 1, 2, 120, 240, 360, 480, 600]) + time_delay # 50mg pills # every 2hrs.
@@ -74,7 +86,7 @@ for seg in range(time_wake, int(time_sleep), time_step):
     
     # If it's time to take a pill
     if (pill_time.size > 0 and seg == pill_time[0]):
-        caff_pill_level = caff_pill_level + 50 #100 #5 #100
+        caff_pill_level = caff_pill_level + 50 #5 #100
         pill_time = np.delete(pill_time, 0)
     
     caff_depl = caff_depletion(caff_blood_level)
@@ -95,8 +107,11 @@ plt.title("Stomach-Caffeine Simulation")
 plt.grid()
 plt.show(block=False)
 
+opt = optimal_profile(time_list, 120, 25)
+
 fig = plt.figure()
 plt.plot(time_list, caff_list, 'r-', markersize=1)
+plt.plot(time_list, opt, 'b--')
 plt.xlabel("Time since waking [minutes]")
 plt.ylabel("Blood-caffeine level [mg]")
 plt.title("Blood-Caffeine Simulation")
