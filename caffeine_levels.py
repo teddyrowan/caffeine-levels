@@ -8,20 +8,26 @@ TODO: implement caffeine absorption function
 TODO: implement caffeine depletion function
 TODO: implement a list of caffeine pill taking times + adjustments for when to increase levels
 
+Notes: 
+- Caffeine elimination half-life is 3-5 hours. [1]
+    x^(3*60) = 0.50 ==> x ~ 0.99615658
+- Reaches peak-effects in 30-60 minutes. [1]
+    Absorption half life ~ 15 mins? x^(15) = 0.50 ==> x ~ 0.9548416
+
+[1] http://sleepeducation.org/news/2013/08/01/sleep-and-caffeine
 """
 
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Just quick assume 1/100th absorbed per interval
+# Based on assumption of absorption half-life of 15 minutes
 def caff_absorp(pill_remaining):
-    # TODO: implement this properly
-    return pill_remaining/10
+    return (1-0.9548416)*pill_remaining
 
+# Based on 180 steps for 3-hour half-life
 def caff_depletion(blood_level):
-    # TODO: implement this properly
-    return blood_level/100
+    return (1-0.99615658)*blood_level
 
 ## Main Start. 
 time_list = np.array([])
