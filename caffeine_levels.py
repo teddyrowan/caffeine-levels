@@ -1,12 +1,15 @@
 """
 caffeine_levels.py
 Author: Teddy Rowan
-Last Modified: December 1, 2020
+Last Modified: December 2, 2020
 Description: Numerical PDE simulation of caffeine levels in blood from taking caffeine pills.
 
-TODO: define constants (time, caffeine pill values, time_delay, etc.)
-TODO: look at modeling pill breakdown in stomach as well. 5 min onset to be gradual. 
+TODO: clean up plots (legend, grid style, linestyle, figsize, etc.)
 TODO: implement ML to optimize pill taking time.
+        - I think for this we just say that the algo needs to figure out how to do four pills. 
+            - Generate 50/100 random placements for the four pills. Then find profiles. Calculate fitness. 
+            - Mutate and repeat. Identify the best profiles. 
+        - I should turn this script into a class and then create a driver script to faciliate ML.
 
 Notes: 
 - Caffeine elimination half-life is 3-5 hours. [1]
@@ -19,7 +22,6 @@ Notes:
 
 [1] http://sleepeducation.org/news/2013/08/01/sleep-and-caffeine
 """
-
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,42 +53,31 @@ time_list = np.array([])
 pill_list = np.array([])
 caff_list = np.array([])
 
-time_delay = 5
-#pill_time = np.array([0, 60, 300, 510]) + time_delay
+pill_strength = 50;
+# Strength of each caffeine pill (100 normal, 50 half, 5x20 for coffee)
 
-pill_time = np.array([0, 1, 2, 120, 230, 340, 450, 560]) + time_delay # 50mg pills # ideal. 
-#pill_time = np.array([0, 1, 2, 120, 240, 360, 480, 600]) + time_delay # 50mg pills # every 2hrs.
+caff_pill_level = caff_blood_level = 0
+# Initial caffeine levels to start the day
 
-"""
-# Coffee example. Uniform over 20 mins. Change intensity to 5mg/step instead of 100mg/step
-pill_time = np.array([])
-for ii in range(0, 20): #morning coffee
-    pill_time = np.append(pill_time, ii)
-for ii in range(210, 230): #noon coffee
-    pill_time = np.append(pill_time, ii)
-for ii in range(450, 470): #4pm coffee
-    pill_time = np.append(pill_time, ii)
-pill_time = pill_time + time_delay
-"""
-
-time_wake = 0 
-time_sleep = 16.5*60
+time_awake = 16.5*60
 # Assumes 8.30am to 1am = (3.5+12+1 hours)
 
 time_step = 1
+# How big of a step to take w/ each EM iteration
 
-caff_pill_level = 0
-# Initial caffeine level in stomach
+time_delay = 5
+# How long in your stomach before the caffeine pill starts to break down and take effect.
 
-caff_blood_level = 0
-# Initial caffeine level in bloodstream
+#pill_time = np.array([0, 60, 300, 510]) + time_delay #100mg profile
+pill_time = np.array([0, 1, 2, 120, 240, 360, 480]) + time_delay # 50mg pills # every 2hrs.
 
-for seg in range(time_wake, int(time_sleep), time_step):
+# Euler-Method step-through to solve profiles.
+for seg in range(0, int(time_awake), time_step):
     time_list = np.append(time_list, seg)
     
     # If it's time to take a pill
     if (pill_time.size > 0 and seg == pill_time[0]):
-        caff_pill_level = caff_pill_level + 50 #5 #100
+        caff_pill_level = caff_pill_level + pill_strength
         pill_time = np.delete(pill_time, 0)
     
     caff_depl = caff_depletion(caff_blood_level)
@@ -97,23 +88,24 @@ for seg in range(time_wake, int(time_sleep), time_step):
 
     pill_list = np.append(pill_list, caff_pill_level)
     caff_list = np.append(caff_list, caff_blood_level)
-    
+
 
 fig = plt.figure()
 plt.plot(time_list, pill_list, 'r-', markersize=1)
 plt.xlabel("Time since waking [minutes]")
 plt.ylabel("Stomach-caffeine level [mg]")
-plt.title("Stomach-Caffeine Simulation")
+plt.title("Simualted Stomach-Caffeine Level")
 plt.grid()
 plt.show(block=False)
 
-opt = optimal_profile(time_list, 120, 25)
+opt = optimal_profile(time_list, 120, 20)
+# Calculate the ideal caffeine profile
 
 fig = plt.figure()
 plt.plot(time_list, caff_list, 'r-', markersize=1)
 plt.plot(time_list, opt, 'b--')
 plt.xlabel("Time since waking [minutes]")
 plt.ylabel("Blood-caffeine level [mg]")
-plt.title("Blood-Caffeine Simulation")
+plt.title("Theoretical Blood-Caffeine Level")
 plt.grid()
 plt.show()
