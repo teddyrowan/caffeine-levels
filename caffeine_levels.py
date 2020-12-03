@@ -5,10 +5,7 @@ Last Modified: December 2, 2020
 Description: Numerical PDE simulation of caffeine levels in blood from taking caffeine pills.
 
 TODO: clean up plots (legend, grid style, linestyle, figsize, etc.)
-TODO: implement ML to optimize pill taking time.
-        - I think for this we just say that the algo needs to figure out how to do four pills. 
-            - Generate 50/100 random placements for the four pills. Then find profiles. Calculate fitness. 
-            - Mutate and repeat. Identify the best profiles. 
+TODO: calculate a fitness value @ the end of the run.
 
 Notes: 
 - Caffeine elimination half-life is 3-5 hours. [1]
@@ -52,7 +49,8 @@ class CaffeineLevels:
         self.pill_list = np.array([])
         self.caff_list = np.array([])
         
-        
+        self.pill_schedule = pill_times
+        # Make a copy of the schedule
 
     # Based on assumption of absorption half-life of 15 minutes
     def _caff_absorp(self, pill_remaining):
@@ -70,6 +68,7 @@ class CaffeineLevels:
             if (val > optimal_caff):
                 val = optimal_caff
             fit = np.append(fit, val)
+
         fit = np.flip(fit)
         return fit
     
@@ -93,7 +92,21 @@ class CaffeineLevels:
             self.pill_list = np.append(self.pill_list, self.caff_pill_level)
             self.caff_list = np.append(self.caff_list, self.caff_blood_level)
 
-        self.plot_results()
+        self.opt = self.optimal_profile(self.time_list, 120, 20)
+        # Calculate the ideal caffeine profile
+
+        return self.calculate_fitness()
+
+    # Fitness defined as sum of squares of difference between blood-caffeine and optimal-profile.
+    # Lower is better. 
+    def calculate_fitness(self):
+        sum = 0;
+        for step in range(0, self.time_list.size):
+            sum = sum + pow(self.caff_list[step] - self.opt[step], 2)
+        
+        self.fitness = sum
+        return self.fitness
+        
 
     def plot_results(self):
         fig = plt.figure()
@@ -103,9 +116,6 @@ class CaffeineLevels:
         plt.title("Simualted Stomach-Caffeine Level")
         plt.grid()
         plt.show(block=False)
-
-        self.opt = self.optimal_profile(self.time_list, 120, 20)
-        # Calculate the ideal caffeine profile
 
         fig = plt.figure()
         plt.plot(self.time_list, self.caff_list, 'r-', markersize=1)
