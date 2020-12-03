@@ -28,6 +28,8 @@ def generate_schedule(n_pills, max_time):
 
 day_length = 15*60
 pill_strength = 100
+optimal_caffeine = 120
+night_caffeine = 20
 
 population = 100
 pill_count = 3
@@ -36,7 +38,7 @@ pop_arr = np.array([])
 
 for ii in range(0, population):
     schedule = generate_schedule(pill_count, day_length)
-    caff = CaffeineLevels(day_length, pill_strength, schedule)
+    caff = CaffeineLevels(day_length, pill_strength, schedule, optimal_caffeine, night_caffeine)
     fit = caff.run_simulation()
     pop_arr = np.append(pop_arr, caff)
 
@@ -48,4 +50,3 @@ print(pop_arr[0].pill_schedule)
 
 pop_arr[0].plot_results()
 # Plot the best fitness
-

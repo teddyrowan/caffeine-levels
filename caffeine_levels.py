@@ -4,8 +4,7 @@ Author: Teddy Rowan
 Last Modified: December 2, 2020
 Description: Numerical PDE simulation of caffeine levels in blood from taking caffeine pills.
 
-TODO: clean up plots (legend, grid style, linestyle, figsize, etc.)
-TODO: calculate a fitness value @ the end of the run.
+TODO: clean up plots (grid style, linestyle, figsize, etc.)
 
 Notes: 
 - Caffeine elimination half-life is 3-5 hours. [1]
@@ -32,15 +31,18 @@ import numpy as np
 
 class CaffeineLevels:
     
-    def __init__(self, day_length, strength, pill_times):
+    def __init__(self, day_length, strength, pill_times, optimal, night_level):
         self.time_delay = 5
         # How long in your stomach before the caffeine pill starts to break down and take effect.
 
         self.pill_time = pill_times + self.time_delay
         self.time_awake = day_length
         self.pill_strength = strength
+        self.optimal_level = optimal
+        self.night_level = night_level
+        
         self.time_step = 1
-
+        
         
         self.caff_pill_level = self.caff_blood_level = 0
         # Initial caffeine levels to start the day
@@ -92,7 +94,7 @@ class CaffeineLevels:
             self.pill_list = np.append(self.pill_list, self.caff_pill_level)
             self.caff_list = np.append(self.caff_list, self.caff_blood_level)
 
-        self.opt = self.optimal_profile(self.time_list, 120, 20)
+        self.opt = self.optimal_profile(self.time_list, self.optimal_level, self.night_level)
         # Calculate the ideal caffeine profile
 
         return self.calculate_fitness()
@@ -117,11 +119,14 @@ class CaffeineLevels:
         plt.grid()
         plt.show(block=False)
 
-        fig = plt.figure()
-        plt.plot(self.time_list, self.caff_list, 'r-', markersize=1)
-        plt.plot(self.time_list, self.opt, 'b--')
+        fig = plt.subplots()
+        ideal = plt.plot(self.time_list, self.opt, 'b--', label = 'Goal blood-caffeine')
+        blood = plt.plot(self.time_list, self.caff_list, 'r-', label='Theorectical blood-caffeine')
         plt.xlabel("Time since waking [minutes]")
         plt.ylabel("Blood-caffeine level [mg]")
-        plt.title("Theoretical Blood-Caffeine Level")
+        plt.title("Blood-Caffeine Simulation")
+        
+        plt.legend()
+                
         plt.grid()
         plt.show()
