@@ -11,13 +11,18 @@ import numpy as np
     
 
 day_length = 15*60
-pill_strength = 50
-##pill_schedule = np.array([0, 60, 300]) #100mg pills
-#pill_schedule = np.array([0, 1, 2, 120, 240, 360]) # 50mg pills
-pill_schedule = np.array([0, 1, 90, 230, 370]) # 50mg pills
+pill_strength = 100
 
 night_level = 20
 optimal = 90
+
+
+##pill_schedule = np.array([0, 60, 300]) #100mg pills
+#pill_schedule = np.array([0, 1, 2, 120, 240, 360]) # 50mg pills
+#pill_schedule = np.array([0, 1, 90, 230, 370]) # 50mg pills
+
+pill_schedule = np.array([0, 77, 306]) # 100mg (best to date)
+optimal = 120
 
 caff = CaffeineLevels(day_length, pill_strength, pill_schedule, optimal, night_level)
 fit = caff.run_simulation()

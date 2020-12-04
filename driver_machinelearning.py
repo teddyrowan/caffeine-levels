@@ -4,10 +4,6 @@ Author: Teddy Rowan
 Last Modified: December 3, 2020
 Description: Driver function for ML optimization of caffeine blood-concentration simulations. 
 
-Current State:
-- Mutation code is just not really improving sims a ton. 
-    - I think it gets stuck with a value late in the schedule and then struggles to escape it
-- Code also maybe is slow? Hard to tell. Should look at optimization.
 """
 
 from caffeine_levels import CaffeineLevels
@@ -15,7 +11,7 @@ import numpy as np
 import random
 
 def generate_schedule(n_pills, max_time):
-    sched = np.array([0]) #dope the schedule to take a pill at t=0
+    sched = np.array([0]) # dope the schedule to take a pill at t=0
     
     while sched.size < n_pills:
         val = round(random.uniform(0, 1)*max_time)
@@ -29,7 +25,12 @@ def generate_schedule(n_pills, max_time):
 def mutate(old, comparison):
     new = np.array([])
     for index in range(0, old.size):
-        val = round((2*old[index]+comparison[index]) / 3 + round(random.uniform(0, 1)*10) - 5)
+        #val = round((2*old[index]+comparison[index]) / 3 + round(random.uniform(0, 1)*10) - 5)
+        
+        dna_frac = random.uniform(0,1)
+        rand_add = random.uniform(0, 1)*10 - 5
+        val = round((old[index]*dna_frac + comparison[index]*(1-dna_frac)) + rand_add)
+        
 
         if (random.uniform(0,1) < 0.1): #1/10 chance, give something a totally new value
             val = round(random.uniform(0, 1)*day_length)
@@ -91,7 +92,7 @@ for jj in range(5, population):
         pop_arr[jj].pill_schedule = new_sched
 
 counter = 1
-while (counter < 100):
+while (counter < 101):
     print('Repeating for ' + str(counter) + ' gen.')
     counter = counter + 1
     
