@@ -2,18 +2,12 @@
 driver_machinelearning.py
 Author: Teddy Rowan
 Last Modified: December 3, 2020
-Description: Driver function for ML optiomization of caffeine blood-concentration simulations. 
-
-TODO: save the best couple of children and mutate the rest of the population
+Description: Driver function for ML optimization of caffeine blood-concentration simulations. 
 
 Current State:
-- Set up to do one iteration of mutations for generations.
-- Median and worst are improving but the best isn't.
-    - I think the mutation code isn't the best, combining good data w/ shite data is poisoining it
-      and preventing new good data from forming quickly.
-          - Need to add randomness, and possibly just toss the old data altogether.
-- Once mutation code is working better, need to loop it so that we can look at many generations of improvements
-
+- Mutation code is just not really improving sims a ton. 
+    - I think it gets stuck with a value late in the schedule and then struggles to escape it
+- Code also maybe is slow? Hard to tell. Should look at optimization.
 """
 
 from caffeine_levels import CaffeineLevels
@@ -35,25 +29,33 @@ def generate_schedule(n_pills, max_time):
 def mutate(old, comparison):
     new = np.array([])
     for index in range(0, old.size):
-        val = round((2*old[index]+comparison[index]) / 3) # + round(random.uniform(0, 1)*10 - 5
+        val = round((2*old[index]+comparison[index]) / 3 + round(random.uniform(0, 1)*10) - 5)
 
-        while val in new: #or val < 0
+        if (random.uniform(0,1) < 0.1): #1/10 chance, give something a totally new value
+            val = round(random.uniform(0, 1)*day_length)
+
+        # Make sure values are positive and unique.
+        should_change = True
+        val = val - 1
+        while should_change:
             val = val + 1
-
+            should_change = val in new
+            if (not should_change):
+                if (val < 0):
+                    should_change = True
+            
         new = np.append(new, val)     
 
     return new
 
-# okay lets do the ML simulation
-# start with 50mg pills. 100mg is boring b/c it's just randomly choosing 2 pills. 
-
+# okay, do the ML Simulation.
 day_length = 15*60
-pill_strength = 50
+pill_strength = 100
 optimal_caffeine = 120
 night_caffeine = 20
 
-population = 50
-pill_count = 6
+population = 100
+pill_count = 3
 
 pop_arr = np.array([])
 
@@ -83,30 +85,39 @@ pop_arr[0].plot_results()
 # if mutating: randomly choose one from top 25%, take the avg value for each data point, then add a random change to it
 for jj in range(5, population):
     if (random.uniform(0,1) < pop_arr[jj].fitness/pop_arr[-1].fitness):
-        #print('Should mutate: ' + str(jj))
         transform_index = round(random.uniform(0,1)*population*0.25)
-        #print('Transform_index: ' + str(transform_index))
         
         new_sched = mutate(pop_arr[jj].pill_schedule, pop_arr[transform_index].pill_schedule)
         pop_arr[jj].pill_schedule = new_sched
 
-# now repeat the sim once to check.
-print('Repeating for 2nd gen.')
-pop_arr2 = np.array([])
-for ii in range(0, population):
-    caff = CaffeineLevels(day_length, pill_strength, pop_arr[ii].pill_schedule, optimal_caffeine, night_caffeine)
-    fit = caff.run_simulation()
-    pop_arr2 = np.append(pop_arr2, caff)
+counter = 1
+while (counter < 100):
+    print('Repeating for ' + str(counter) + ' gen.')
+    counter = counter + 1
     
-pop_arr2 = sorted(pop_arr2, key=lambda x:x.fitness)
+    pop_arr2 = np.array([])
+    for ii in range(0, population):
+        caff = CaffeineLevels(day_length, pill_strength, pop_arr[ii].pill_schedule, optimal_caffeine, night_caffeine)
+        fit = caff.run_simulation()
+        pop_arr2 = np.append(pop_arr2, caff)
+    
+    pop_arr2 = sorted(pop_arr2, key=lambda x:x.fitness)
 
 
-print(pop_arr2[0].pill_schedule)
-# print the schedule for the best profile
+    print(pop_arr2[0].pill_schedule)
+    # print the schedule for the best profile
 
-print('Best Fitness: '+ str(pop_arr2[0].fitness))
-print('Median Fitness: '+ str(pop_arr2[round(population/2)].fitness))
-print('Worst Fitness: '+ str(pop_arr2[-1].fitness))
+    print('Best Fitness: '+ str(pop_arr2[0].fitness))
+    print('Median Fitness: '+ str(pop_arr2[round(population/2)].fitness))
+    print('Worst Fitness: '+ str(pop_arr2[-1].fitness))
 
-pop_arr2[0].plot_results()
-# Plot the best fitness
+    if not (counter % 20):
+        pop_arr2[0].plot_results()
+
+    for jj in range(5, population):
+        if (random.uniform(0,1) < pop_arr2[jj].fitness/pop_arr2[-1].fitness):
+            transform_index = round(random.uniform(0,1)*population*0.25)
+            new_sched = mutate(pop_arr2[jj].pill_schedule, pop_arr2[transform_index].pill_schedule)
+            pop_arr2[jj].pill_schedule = new_sched
+    
+    pop_arr = pop_arr2

@@ -99,13 +99,14 @@ class CaffeineLevels:
             sum = sum + pow(self.caff_list[step] - self.opt[step], 2)
             if (self.opt[step] < self.optimal_level+1 and self.caff_list[step] > self.opt[step]):
                 # If it's going to effect bedtime caffeine levels, double the fitness deviation.
-                sum = sum + 1000*pow(self.caff_list[step] - self.opt[step], 2)
+                sum = sum + 1.0*pow(self.caff_list[step] - self.opt[step], 2)
         
         self.fitness = sum
         return self.fitness
         
 
     def plot_results(self):
+        """
         fig = plt.figure()
         plt.plot(self.time_list, self.pill_list, 'r-', markersize=1)
         plt.xlabel("Time since waking [minutes]")
@@ -113,6 +114,7 @@ class CaffeineLevels:
         plt.title("Simualted Stomach-Caffeine Level")
         plt.grid()
         plt.show(block=False)
+        """
 
         fig = plt.subplots()
         ideal = plt.plot(self.time_list, self.opt, 'b--', label = 'Goal blood-caffeine')
