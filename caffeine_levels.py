@@ -1,8 +1,8 @@
 """
 caffeine_levels.py
 Author: Teddy Rowan
-Last Modified: December 2, 2020
-Description: Numerical PDE simulation of caffeine levels in blood from taking caffeine pills.
+Last Modified: December 3, 2020
+Description: Numerical PDE simulation (Euler-Method) of caffeine levels in blood from taking caffeine pills.
 
 TODO: clean up plots (grid style, linestyle, figsize, etc.)
 
@@ -16,14 +16,6 @@ Notes:
 - Seconds model made no meaningful change and increased computation dramatically. 
 
 [1] http://sleepeducation.org/news/2013/08/01/sleep-and-caffeine
-"""
-
-"""
-To transfer:
-pill_strength = 100 #50
-time_awake = 16.5*60
-pill_time = np.array([0, 60, 300]) + time_delay #100mg profile
-pill_time = np.array([0, 1, 2, 120, 240, 360, 480]) + time_delay # 50mg pills # every 2hrs.
 """
 
 import matplotlib.pyplot as plt
@@ -105,6 +97,9 @@ class CaffeineLevels:
         sum = 0;
         for step in range(0, self.time_list.size):
             sum = sum + pow(self.caff_list[step] - self.opt[step], 2)
+            if (self.opt[step] < self.optimal_level+1 and self.caff_list[step] > self.opt[step]):
+                # If it's going to effect bedtime caffeine levels, double the fitness deviation.
+                sum = sum + 1000*pow(self.caff_list[step] - self.opt[step], 2)
         
         self.fitness = sum
         return self.fitness
