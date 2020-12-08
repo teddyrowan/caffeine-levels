@@ -4,9 +4,21 @@ Author: Teddy Rowan
 Last Modified: December 3, 2020
 Description: Driver function for ML optimization of caffeine blood-concentration simulations. 
 
+TODO: only print shit when there is a change in the new-best
+TODO: mutation code just isn't good.
+    Keep top 5% of sims.
+        - Let's say 10% chance of totally new sim
+        - 40% chance of modifying current values
+            - 50% chance to move each value -10 to 10 mins from current
+        - 50% chance of taking one of the best 10% of current sims and modifying. 
+            - 50% chance of moving each value from -10 to 10 mins of current.
+            - 25% chance of entirely new value
+            - 25% chance of no change.
+    Sort new schedule before returning. 
 """
 
 from caffeine_levels import CaffeineLevels
+import matplotlib.pyplot as plt
 import numpy as np
 import random
 
@@ -49,14 +61,39 @@ def mutate(old, comparison):
 
     return new
 
+def print_fitness(arr, pop_size):
+    print('Best Fitness: '+ str(arr[0].fitness))
+    print('Median Fitness: '+ str(arr[round(pop_size/2)].fitness))
+    print('Worst Fitness: '+ str(arr[-1].fitness))
+    
+def plot_all(data):
+    fig = plt.subplots()
+    for sim in data:
+        blood = plt.plot(sim.time_list, sim.caff_list, 'r-', alpha=0.08)
+    
+    plt.plot(data[0].time_list, data[0].caff_list, 'b-')
+    plt.plot(sim.time_list, sim.opt, 'g-')
+    
+    
+    plt.xlabel("Time since waking [minutes]")
+    plt.ylabel("Blood-caffeine level [mg]")
+    plt.title("Blood-Caffeine Simulation")
+    plt.xlim([0, day_length])
+    plt.ylim([0, 165])
+            
+    plt.grid()
+    plt.show()
+    
+
+
 # okay, do the ML Simulation.
-day_length = 15*60
-pill_strength = 100
+day_length = 15*60 #((12-8.5) + (12) + 0.5)*60 #16hrs
+pill_strength = 100#50#100
 optimal_caffeine = 120
 night_caffeine = 20
 
-population = 100
-pill_count = 3
+population = 100#250
+pill_count = 3#6#3
 
 pop_arr = np.array([])
 
@@ -72,15 +109,14 @@ pop_arr = sorted(pop_arr, key=lambda x:x.fitness)
 print(pop_arr[0].pill_schedule)
 # print the schedule for the best profile
 
-print('Best Fitness: '+ str(pop_arr[0].fitness))
-print('Median Fitness: '+ str(pop_arr[round(population/2)].fitness))
-print('Worst Fitness: '+ str(pop_arr[-1].fitness))
+print_fitness(pop_arr, population)
+# Print best/worst/median fitness values
 
-pop_arr[0].plot_results()
+#pop_arr[0].plot_results()
 # Plot the best fitness
 
-#for entry in pop_arr:
-#    print(entry.fitness)
+plot_all(pop_arr)
+#exit()
 
 # save the top 5, iterate through the rest w/ probability fitness[x]/fitness[-1] of mutating
 # if mutating: randomly choose one from top 25%, take the avg value for each data point, then add a random change to it
@@ -93,7 +129,7 @@ for jj in range(5, population):
 
 counter = 1
 while (counter < 101):
-    print('Repeating for ' + str(counter) + ' gen.')
+    print('Repeating for gen: ' + str(counter))
     counter = counter + 1
     
     pop_arr2 = np.array([])
@@ -104,16 +140,16 @@ while (counter < 101):
     
     pop_arr2 = sorted(pop_arr2, key=lambda x:x.fitness)
 
-
+    #TODO: only print if it's a new schedule. 
     print(pop_arr2[0].pill_schedule)
-    # print the schedule for the best profile
+    # Print the schedule for the best profile
 
-    print('Best Fitness: '+ str(pop_arr2[0].fitness))
-    print('Median Fitness: '+ str(pop_arr2[round(population/2)].fitness))
-    print('Worst Fitness: '+ str(pop_arr2[-1].fitness))
+    print_fitness(pop_arr2, population)
+    # Print best/worst/median fitness values
 
     if not (counter % 20):
-        pop_arr2[0].plot_results()
+        plot_all(pop_arr2)
+        #pop_arr2[0].plot_results()
 
     for jj in range(5, population):
         if (random.uniform(0,1) < pop_arr2[jj].fitness/pop_arr2[-1].fitness):

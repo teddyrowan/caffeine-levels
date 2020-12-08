@@ -1,10 +1,8 @@
 """
 caffeine_levels.py
 Author: Teddy Rowan
-Last Modified: December 3, 2020
+Last Modified: December 4, 2020
 Description: Numerical PDE simulation (Euler-Method) of caffeine levels in blood from taking caffeine pills.
-
-TODO: clean up plots (grid style, linestyle, figsize, etc.)
 
 Notes: 
 - Caffeine elimination half-life is 3-5 hours. [1]
@@ -35,7 +33,6 @@ class CaffeineLevels:
         
         self.time_step = 1
         
-        
         self.caff_pill_level = self.caff_blood_level = 0
         # Initial caffeine levels to start the day
         
@@ -46,13 +43,16 @@ class CaffeineLevels:
         self.pill_schedule = pill_times
         # Make a copy of the schedule
 
+
     # Based on assumption of absorption half-life of 15 minutes
     def _caff_absorp(self, pill_remaining):
         return (1-0.9548416)*pill_remaining #minutes model
 
+
     # Based on 180 steps for 3-hour half-life
     def _caff_depletion(self, blood_level):
         return (1-0.99615658)*blood_level #minutes model
+    
     
     # Create an optimal caffination profile.
     def optimal_profile(self, time_list, optimal_caff, end_caff):
@@ -77,12 +77,15 @@ class CaffeineLevels:
                 self.caff_pill_level = self.caff_pill_level + self.pill_strength
                 self.pill_time = np.delete(self.pill_time, 0)
     
+            # Calculate changes before modifying values
             self.caff_depl = self._caff_depletion(self.caff_blood_level)
             self.caff_absp = self._caff_absorp(self.caff_pill_level)
     
+            # Apply the changes
             self.caff_pill_level = self.caff_pill_level - self.caff_absp
             self.caff_blood_level = self.caff_blood_level + self.caff_absp - self.caff_depl
 
+            # Append the changes
             self.pill_list = np.append(self.pill_list, self.caff_pill_level)
             self.caff_list = np.append(self.caff_list, self.caff_blood_level)
 
@@ -91,8 +94,9 @@ class CaffeineLevels:
 
         return self.calculate_fitness()
 
+
     # Fitness defined as sum of squares of difference between blood-caffeine and optimal-profile.
-    # Lower is better. 
+    # (Lower is better). 
     def calculate_fitness(self):
         sum = 0;
         for step in range(0, self.time_list.size):
@@ -103,26 +107,26 @@ class CaffeineLevels:
         
         self.fitness = sum
         return self.fitness
-        
-
-    def plot_results(self):
-        """
+    
+    
+    def plot_stomach(self, should_block):
         fig = plt.figure()
         plt.plot(self.time_list, self.pill_list, 'r-', markersize=1)
         plt.xlabel("Time since waking [minutes]")
         plt.ylabel("Stomach-caffeine level [mg]")
         plt.title("Simualted Stomach-Caffeine Level")
         plt.grid()
-        plt.show(block=False)
-        """
-
+        plt.show(block=should_block)
+    
+    
+    # Plot the blood-caffeine and idealized curve.
+    def plot_results(self):
         fig = plt.subplots()
         ideal = plt.plot(self.time_list, self.opt, 'b--', label = 'Goal blood-caffeine')
         blood = plt.plot(self.time_list, self.caff_list, 'r-', label='Theorectical blood-caffeine')
         plt.xlabel("Time since waking [minutes]")
         plt.ylabel("Blood-caffeine level [mg]")
         plt.title("Blood-Caffeine Simulation")
-        
         plt.legend()
                 
         plt.grid()
