@@ -29,4 +29,3 @@ optimal = 120
 caff = CaffeineLevels(day_length, pill_strength, pill_schedule, optimal, night_level)
 fit = caff.run_simulation()
 print("Fitness: " + str(fit))
-caff.plot_results()
