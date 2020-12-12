@@ -1,7 +1,7 @@
 """
 settings_ml.py
 Author: Teddy Rowan
-Last Modified: December 10, 2020
+Last Modified: December 12, 2020
 Description: Settings for the machine-learning driver function for the caffeine simulations.
 """
 
@@ -29,9 +29,8 @@ def get_settings():
     settings['generations'] = 50
     # How many generations of simulations to run
     
-    #TODO: add alpha setting
     settings['alpha'] = 0.08
-    # 0.08 for 250 pop
-    # 0.03 for 5000 pop
+    # Visibility of all the populations on the plots
+    # 0.08 for 250 pop, 0.03 for 2500/5000
     
     return settings

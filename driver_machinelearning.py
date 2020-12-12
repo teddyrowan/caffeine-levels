@@ -1,21 +1,11 @@
 """
 driver_machinelearning.py
 Author: Teddy Rowan
-Last Modified: December 10, 2020
+Last Modified: December 12, 2020
 Description: Driver function for ML optimization of caffeine blood-concentration simulations. 
 
 TODO: abstract helper code to another file.
 TODO: abstract mutation code.
-TODO: mutation code just isn't good. (better-ish now??)
-    Keep top 5% of sims.
-        - 10% chance of totally new sim
-        - 40% chance of modifying current values
-            - 50% chance to move each value -10 to 10 mins from current
-        - 50% chance of taking one of the best 10% of current sims and modifying. 
-            - 50% chance of moving each value from -10 to 10 mins of current.
-            - 25% chance of entirely new value
-            - 25% chance of no change.
-    Sort new schedule before returning. 
 """
 
 from caffeine_levels import CaffeineLevels
@@ -121,8 +111,8 @@ plot_all(pop_arr, 0, False)
 # save the top 5, iterate through the rest w/ probability fitness[x]/fitness[-1] of mutating
 # if mutating: randomly choose one from top 25%, take the avg value for each data point, then add a random change to it
 for jj in range(5, settings['population']):
-    if (random.uniform(0,1) < pop_arr[jj].fitness/pop_arr[-1].fitness):
-        transform_index = round(random.uniform(0,1)*settings['population']*0.25)
+    if (random.uniform(0,0.8) < pop_arr[jj].fitness/pop_arr[-1].fitness):
+        transform_index = round(random.uniform(0,1)*settings['population']*0.10)
         new_sched = mutate(pop_arr[jj].pill_schedule, pop_arr[transform_index].pill_schedule)
         pop_arr[jj].pill_schedule = new_sched
 
