@@ -6,9 +6,9 @@ Description: Driver function for ML optimization of caffeine blood-concentration
 
 TODO: abstract helper code to another file.
 TODO: abstract mutation code.
-TODO: mutation code just isn't good.
+TODO: mutation code just isn't good. (better-ish now??)
     Keep top 5% of sims.
-        - Let's say 10% chance of totally new sim
+        - 10% chance of totally new sim
         - 40% chance of modifying current values
             - 50% chance to move each value -10 to 10 mins from current
         - 50% chance of taking one of the best 10% of current sims and modifying. 
@@ -25,8 +25,8 @@ import random
 import settings_ml as sml
 
 def generate_schedule(n_pills, max_time):
-    sched = np.array([0]) # dope the schedule to take a pill at t=0
-    #sched = np.array([]) # no doping
+    #sched = np.array([0]) # dope the schedule to take a pill at t=0
+    sched = np.array([]) # no doping
     
     while sched.size < n_pills:
         val = round(random.uniform(0, 1)*max_time)
@@ -40,13 +40,10 @@ def generate_schedule(n_pills, max_time):
 def mutate(old, comparison):
     new = np.array([])
     for index in range(0, old.size):
-        #val = round((2*old[index]+comparison[index]) / 3 + round(random.uniform(0, 1)*10) - 5)
-        
-        dna_frac = random.uniform(0,1)
-        rand_add = random.uniform(0, 1)*10 - 5
+        dna_frac = random.uniform(0,0.5) # can't keep more than half of bad DNA
+        rand_add = random.uniform(0, 1)*20 - 10
         val = round((old[index]*dna_frac + comparison[index]*(1-dna_frac)) + rand_add)
         
-
         if (random.uniform(0,1) < 0.1): #1/10 chance, give something a totally new value
             val = round(random.uniform(0, 1)*settings['day_length'])
 
@@ -62,7 +59,7 @@ def mutate(old, comparison):
             
         new = np.append(new, val)     
 
-    return new
+    return np.sort(new)
 
 def print_fitness(arr, pop_size, print_all):
     print('Best Fitness: '+ str(arr[0].fitness))
@@ -147,13 +144,12 @@ for counter in range(1,settings['generations']+1):
         print(pop_arr2[0].pill_schedule)
         print_fitness(pop_arr2, settings['population'], False)
 
-    #title = 'r' + str(counter) + '_blood.png'
     plot_all(pop_arr2, counter, False)
     
     # Mutate the data
     for jj in range(5, settings['population']):
-        if (random.uniform(0,1) < pop_arr2[jj].fitness/pop_arr2[-1].fitness):
-            transform_index = round(random.uniform(0,1)*settings['population']*0.25)
+        if (random.uniform(0,0.8) < pop_arr2[jj].fitness/pop_arr2[-1].fitness):
+            transform_index = round(random.uniform(0,1)*settings['population']*0.10)
             new_sched = mutate(pop_arr2[jj].pill_schedule, pop_arr2[transform_index].pill_schedule)
             pop_arr2[jj].pill_schedule = new_sched
     
