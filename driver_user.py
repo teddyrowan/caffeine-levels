@@ -9,6 +9,13 @@ Description: Driver function for user-created caffeine blood-concentration simul
 from caffeine_levels import CaffeineLevels
 import numpy as np
 
+def coffee(sched, start, end):
+    for ii in range(round(start), round(end)):
+        if (not ii in sched):
+            sched = np.append(sched, ii)
+    
+    return sched
+    
 pill_strength = 50
 # What is the strength [mg] of the caffeine pills
     
@@ -24,6 +31,11 @@ night_level = 20
 pill_schedule = np.array([0, 1, 2, 126, 238, 347])
 # Best profile for 50mg pills (via ML) [times in minutes since waking]
 
+#pill_schedule = np.array([])
+#pill_schedule = coffee(pill_schedule, 60, 89)
+#pill_schedule = coffee(pill_schedule, 120, 149)
+#pill_schedule = coffee(pill_schedule, 390, 419)
+## Teddy's Coffee Example (strength = 4mg)
 
 """ 
 Recommended pill schedules

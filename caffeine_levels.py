@@ -121,12 +121,13 @@ class CaffeineLevels:
     
     # Plot the blood-caffeine and idealized curve.
     def plot_results(self):
+        plt.rcParams['figure.figsize'] = (8, 5)
         fig = plt.subplots()
         ideal = plt.plot(self.time_list, self.opt, 'b--', label = 'Goal blood-caffeine')
         blood = plt.plot(self.time_list, self.caff_list, 'r-', label='Theorectical blood-caffeine')
         plt.xlabel("Time since waking [minutes]")
         plt.ylabel("Blood-caffeine level [mg]")
-        plt.title("Blood-Caffeine Simulation")
+        plt.title("Blood-Caffeine Simulation (Coffee Approximation)")
         plt.legend()
                 
         plt.grid()
