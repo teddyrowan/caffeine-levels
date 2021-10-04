@@ -8,13 +8,13 @@ Description: Settings for the machine-learning driver function for the caffeine 
 def get_settings():
     settings = {}
 
-    settings['day_length'] = 15*60
+    settings['day_length'] = 36*60
     # Common: [15*60, ((12-8.5)+12+0.5)*60 = 16*60]
     
-    settings['pill_strength'] = 100
+    settings['pill_strength'] = 50
     # Common: 50mg, 100mg
     
-    settings['pill_count'] = 3
+    settings['pill_count'] = 18
     # How many pills/half-pills to take
     
     settings['optimal_caffeine'] = 120
